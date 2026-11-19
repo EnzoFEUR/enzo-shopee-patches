@@ -27,7 +27,7 @@ Once published to GitHub, click the button below or manually add this repository
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.0.0-dev.2](https://github.com/EnzoFEUR/enzo-shopee-patches/releases/tag/v1.0.0-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;12 patches total
+> **[v1.0.0-dev.3](https://github.com/EnzoFEUR/enzo-shopee-patches/releases/tag/v1.0.0-dev.3)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;12 patches total
 <details open>
 <summary>📦 Shopee PH&nbsp;&nbsp;•&nbsp;&nbsp;12 patches</summary>
 <br>
@@ -41,7 +41,7 @@ Once published to GitHub, click the button below or manually add this repository
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
-| [Boost Shopee Live latency and quality](#boost-shopee-live-latency-and-quality) | Applies low-latency live player optimizations (IPv4-only DNS, decoder pre-creation, hardware low-delay decoding, zero P2P uploads), adds a stream resolution preset picker (Lowest/Fast/Balanced/Highest/Auto), and stops live telemetry heartbeats and hidden screenshot uploads. | • Live stream resolution preset<br>• Lock selected resolution<br>• Enable low-latency network & decoder boost<br>• Disable Live P2P peer uploading<br>• Disable Live telemetry & snapshot uploads |
+| [Boost Shopee Live latency and quality](#boost-shopee-live-latency-and-quality) | Applies smooth fast-connect live optimizations (IPv4-only DNS, hardware decoding, decoder pre-creation, smooth URL switching, zero P2P uploads), adds a stream resolution preset picker (Auto/Lowest/Fast/Balanced/Highest), and stops live telemetry heartbeats and hidden screenshot uploads. | • Live stream resolution preset<br>• Lock selected resolution<br>• Enable fast-connect network boost<br>• Aggressive low-delay mode (Experimental)<br>• Disable Live P2P peer uploading<br>• Disable Live telemetry & snapshot uploads |
 | [Disable Live and Video auto-preloading](#disable-live-and-video-auto-preloading) | Disables background Shopee Video download, floating Live video, and Check-In widget components and skips eager Live/Video startup preloading and auto-landing prefetchers. |  |
 | [Disable ShopeeTracker event collection](#disable-shopeetracker-event-collection) | Short-circuits ShopeeTracker event logging, MMAP buffer usage, scheduled uploads, and background flush calls while keeping ShopeeTrackerContentProvider intact for SESSION_ID reads. |  |
 | [Disable ad and telemetry SDK components](#disable-ad-and-telemetry-sdk-components) | Disables third-party and first-party telemetry/APM components, Firebase Analytics/Crashlytics/DataTransport registrars, and telemetry manifest flags in AndroidManifest.xml. |  |

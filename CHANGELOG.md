@@ -1,3 +1,9 @@
+## [1.0.0-dev.3](https://github.com/EnzoFEUR/enzo-shopee-patches/compare/v1.0.0-dev.2...v1.0.0-dev.3) (2026-11-19)
+
+### 🐛 Bug Fixes
+
+* **live:** eliminate stutter/lag defaults, enable hardware decode & keep-pulling, gate aggressive low-delay mode ([c39956a](https://github.com/EnzoFEUR/enzo-shopee-patches/commit/c39956a8a5c0446d3a1dd56bc305086d80956b31))
+
 ## [1.0.0-dev.2](https://github.com/EnzoFEUR/enzo-shopee-patches/compare/v1.0.0-dev.1...v1.0.0-dev.2) (2026-11-19)
 
 ### ✨ New Features

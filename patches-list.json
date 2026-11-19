@@ -1,10 +1,10 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.0.0-dev.2",
+  "version": "1.0.0-dev.3",
   "patches": [
     {
       "name": "Boost Shopee Live latency and quality",
-      "description": "Applies low-latency live player optimizations (IPv4-only DNS, decoder pre-creation, hardware low-delay decoding, zero P2P uploads), adds a stream resolution preset picker (Lowest/Fast/Balanced/Highest/Auto), and stops live telemetry heartbeats and hidden screenshot uploads.",
+      "description": "Applies smooth fast-connect live optimizations (IPv4-only DNS, hardware decoding, decoder pre-creation, smooth URL switching, zero P2P uploads), adds a stream resolution preset picker (Auto/Lowest/Fast/Balanced/Highest), and stops live telemetry heartbeats and hidden screenshot uploads.",
       "default": true,
       "category": null,
       "compatiblePackages": [
@@ -38,34 +38,43 @@
         {
           "key": "liveResolution",
           "title": "Live stream resolution preset",
-          "description": "Selects Shopee Live resolution tier. Lowest gives fastest startup and minimal delay; Highest picks maximum quality.",
+          "description": "Starting resolution tier for Shopee Live. Auto keeps adaptive bitrate (recommended on mobile data or weak Wi-Fi). Other presets start at that tier.",
           "required": true,
           "type": "kotlin.String",
-          "default": "lowest",
+          "default": "auto",
           "values": {
+            "Auto (Shopee ABR, smoothest)": "auto",
             "Lowest (Fastest / Minimal Delay)": "lowest",
             "Fast (480p / 540p)": "fast",
             "Balanced (720p)": "balanced",
-            "Highest (1080p / Best Quality)": "highest",
-            "Auto (Shopee Default ABR)": "auto"
+            "Highest (1080p / Best Quality)": "highest"
           }
         },
         {
           "key": "lockSelectedResolution",
           "title": "Lock selected resolution",
-          "description": "Locks the manifest to the selected resolution tier to eliminate mid-stream ABR switching stalls (ignored when Auto is selected).",
+          "description": "Strips all other tiers so the player can never switch. Removes ABR fallback, so it stutters if your network dips below the tier's bitrate (ignored when Auto is selected).",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": false,
+          "values": null
+        },
+        {
+          "key": "lowLatencyNetworkBoost",
+          "title": "Enable fast-connect network boost",
+          "description": "IPv4-only live DNS, connection reuse, smooth URL switching, and decoder pre-creation for faster stream start. Does not shrink buffers.",
           "required": false,
           "type": "kotlin.Boolean",
           "default": true,
           "values": null
         },
         {
-          "key": "lowLatencyNetworkBoost",
-          "title": "Enable low-latency network & decoder boost",
-          "description": "Forces IPv4-only live DNS, buffer optimization, link reuse, decoder pre-creation, MediaCodec low-delay mode, and FDK-AAC.",
+          "key": "aggressiveLowDelay",
+          "title": "Aggressive low-delay mode (Experimental)",
+          "description": "Smaller playback buffers, MediaCodec low-delay decoding, FDK-AAC, and frame-get optimizations. Lowers delay on strong, stable Wi-Fi but can cause stutter on mobile data or some devices.",
           "required": false,
           "type": "kotlin.Boolean",
-          "default": true,
+          "default": false,
           "values": null
         },
         {
