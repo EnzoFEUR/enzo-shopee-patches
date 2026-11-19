@@ -17,7 +17,6 @@ internal val CRONET_BOOST_TRUE_FINGERPRINTS = listOf(
     "isEnabledPrewarmUrl",
     "isMultipleAddressEnabled",
     "isEnabledCreateAlternativeConnect",
-    "isEnableBufferUploadProvider",
 ).map { methodName ->
     Fingerprint(
         definingClass = CRONET_CONFIGURATION_CLASS,
@@ -28,8 +27,6 @@ internal val CRONET_BOOST_TRUE_FINGERPRINTS = listOf(
 } + listOf(
     "getEnabledZstdSupport",
     "getPrewarmUrl",
-    "getCronetBufferUploadProvider",
-    "getRetryUnsendRequestV2",
 ).map { methodName ->
     Fingerprint(
         definingClass = CRONET_ABTEST_CONFIG_CLASS,
