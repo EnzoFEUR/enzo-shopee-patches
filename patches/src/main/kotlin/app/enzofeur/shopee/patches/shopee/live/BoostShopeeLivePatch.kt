@@ -21,7 +21,7 @@ private val VALID_RESOLUTION_PRESETS = setOf("lowest", "fast", "balanced", "high
 @Suppress("unused")
 val boostShopeeLivePatch = patch(
     name = "Boost Shopee Live latency and quality",
-    description = "Applies low-latency live player optimizations (IPv4-only DNS, decoder pre-creation, hardware low-delay decoding, zero P2P uploads), adds a stream resolution preset picker (Lowest/Fast/Balanced/Highest/Auto), and stops live telemetry heartbeats and hidden screenshot uploads.",
+    description = "Applies smooth fast-connect live optimizations (IPv4-only DNS, hardware decoding, decoder pre-creation, smooth URL switching, zero P2P uploads), adds a stream resolution preset picker (Auto/Lowest/Fast/Balanced/Highest), and stops live telemetry heartbeats and hidden screenshot uploads.",
     default = true,
 ) {
     compatibleWith(COMPATIBILITY_SHOPEE_PH)
@@ -30,31 +30,38 @@ val boostShopeeLivePatch = patch(
 
     val liveResolution by stringOption(
         key = "liveResolution",
-        default = "lowest",
+        default = "auto",
         values = mapOf(
+            "Auto (Shopee ABR, smoothest)" to "auto",
             "Lowest (Fastest / Minimal Delay)" to "lowest",
             "Fast (480p / 540p)" to "fast",
             "Balanced (720p)" to "balanced",
             "Highest (1080p / Best Quality)" to "highest",
-            "Auto (Shopee Default ABR)" to "auto",
         ),
         title = "Live stream resolution preset",
-        description = "Selects Shopee Live resolution tier. Lowest gives fastest startup and minimal delay; Highest picks maximum quality.",
+        description = "Starting resolution tier for Shopee Live. Auto keeps adaptive bitrate (recommended on mobile data or weak Wi-Fi). Other presets start at that tier.",
         required = true,
     )
 
     val lockSelectedResolution by booleanOption(
         key = "lockSelectedResolution",
-        default = true,
+        default = false,
         title = "Lock selected resolution",
-        description = "Locks the manifest to the selected resolution tier to eliminate mid-stream ABR switching stalls (ignored when Auto is selected).",
+        description = "Strips all other tiers so the player can never switch. Removes ABR fallback, so it stutters if your network dips below the tier's bitrate (ignored when Auto is selected).",
     )
 
     val lowLatencyNetworkBoost by booleanOption(
         key = "lowLatencyNetworkBoost",
         default = true,
-        title = "Enable low-latency network & decoder boost",
-        description = "Forces IPv4-only live DNS, buffer optimization, link reuse, decoder pre-creation, MediaCodec low-delay mode, and FDK-AAC.",
+        title = "Enable fast-connect network boost",
+        description = "IPv4-only live DNS, connection reuse, smooth URL switching, and decoder pre-creation for faster stream start. Does not shrink buffers.",
+    )
+
+    val aggressiveLowDelay by booleanOption(
+        key = "aggressiveLowDelay",
+        default = false,
+        title = "Aggressive low-delay mode (Experimental)",
+        description = "Smaller playback buffers, MediaCodec low-delay decoding, FDK-AAC, and frame-get optimizations. Lowers delay on strong, stable Wi-Fi but can cause stutter on mobile data or some devices.",
     )
 
     val disableLiveP2p by booleanOption(
@@ -72,13 +79,14 @@ val boostShopeeLivePatch = patch(
     )
 
     execute {
-        val preset = (liveResolution ?: "lowest").trim().lowercase()
+        val preset = (liveResolution ?: "auto").trim().lowercase()
         if (preset !in VALID_RESOLUTION_PRESETS) {
             throw PatchException("Unsupported Shopee Live resolution preset: $liveResolution")
         }
 
         val lock = lockSelectedResolution == true
         val boost = lowLatencyNetworkBoost == true
+        val aggressive = aggressiveLowDelay == true
         val noP2p = disableLiveP2p == true
         val noTelemetry = disableLiveTelemetryAndSnapshots == true
         val presetConfig = "$preset:${if (lock) 1 else 0}:${if (noP2p) 1 else 0}"
@@ -123,7 +131,21 @@ val boostShopeeLivePatch = patch(
         }
 
         if (boost) {
-            LIVE_ABTEST_TRUE_FINGERPRINTS.forEach { fingerprint ->
+            LIVE_ABTEST_SAFE_FINGERPRINTS.forEach { fingerprint ->
+                fingerprint.methodOrNull?.let {
+                    it.returnEarly(true)
+                    matched++
+                }
+            }
+
+            SzHardwareCodecEnabledFingerprint.methodOrNull?.let {
+                it.returnEarly(true)
+                matched++
+            }
+        }
+
+        if (aggressive) {
+            LIVE_ABTEST_AGGRESSIVE_FINGERPRINTS.forEach { fingerprint ->
                 fingerprint.methodOrNull?.let {
                     it.returnEarly(true)
                     matched++
@@ -152,27 +174,32 @@ val boostShopeeLivePatch = patch(
             }
         }
 
-        if (boost || noTelemetry) {
+        if (boost || aggressive || noTelemetry) {
             CallNativeSetPlayerConfigFingerprint.methodOrNull?.let { method ->
                 val targetInstruction: Instruction = method.getInstruction(0)
                 val smali = buildString {
                     appendLine("if-eqz p3, :skip_live_player_config")
+                    if (boost || aggressive) appendLine("const/4 v0, 0x1")
                     if (boost) {
-                        appendLine("const/4 v0, 0x1")
-                        appendLine("iput-boolean v0, p3, $MMC_PLAYER_CONFIG_CLASS->enableBufferSizeOpt:Z")
                         appendLine("iput-boolean v0, p3, $MMC_PLAYER_CONFIG_CLASS->enableDnsIpv4Only:Z")
                         appendLine("iput-boolean v0, p3, $MMC_PLAYER_CONFIG_CLASS->enableLivestreamPreCreateDecoder:Z")
+                        appendLine("iput-boolean v0, p3, $MMC_PLAYER_CONFIG_CLASS->enableSwitchUrlSmoothly:Z")
+                        appendLine("iput-boolean v0, p3, $MMC_PLAYER_CONFIG_CLASS->enableKeepPulling:Z")
+                    }
+                    if (aggressive) {
+                        appendLine("iput-boolean v0, p3, $MMC_PLAYER_CONFIG_CLASS->enableBufferSizeOpt:Z")
                         appendLine("iput-boolean v0, p3, $MMC_PLAYER_CONFIG_CLASS->enableMediacodecGetFrameOpt:Z")
                         appendLine("iput-boolean v0, p3, $MMC_PLAYER_CONFIG_CLASS->enableFDKAAC:Z")
                         appendLine("iput-boolean v0, p3, $MMC_PLAYER_CONFIG_CLASS->useDummyViewOpt:Z")
-                        appendLine("iput-boolean v0, p3, $MMC_PLAYER_CONFIG_CLASS->enableSwitchUrlSmoothly:Z")
                         appendLine("iput-boolean v0, p3, $MMC_PLAYER_CONFIG_CLASS->enableBanSwitchUrlOnLowestLevel:Z")
+                    }
+                    if (boost) {
+                        appendLine("const/4 v0, 0x2")
                         appendLine("iput v0, p3, $MMC_PLAYER_CONFIG_CLASS->reuseLinkOpt:I")
                     }
                     if (noTelemetry) {
                         appendLine("const/4 v0, 0x0")
                         appendLine("invoke-virtual { p3, v0 }, $MMC_PLAYER_CONFIG_CLASS->setReportLevel(I)V")
-                        appendLine("invoke-virtual { p3, v0 }, $MMC_PLAYER_CONFIG_CLASS->setUseNewLagStatistic(Z)V")
                     }
                 }
                 method.addInstructionsWithLabels(
@@ -198,7 +225,7 @@ val boostShopeeLivePatch = patch(
             }
         }
 
-        if ((preset != "auto" || boost || noP2p || noTelemetry) && matched == 0) {
+        if ((preset != "auto" || boost || aggressive || noP2p || noTelemetry) && matched == 0) {
             throw PatchException("No Shopee Live latency/quality target methods matched.")
         }
     }

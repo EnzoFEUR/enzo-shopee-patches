@@ -8,7 +8,6 @@ private const val MMC_HARDWARE_DECODER_CLASS = "Lcom/mmc/player/decoder/MMCHardw
 private const val LIVETECH_REPORTER_CLASS =
     "Lcom/shopee/livetechsdk/trackreport/SZLiveTechTrackingReporter;"
 private const val SZ_TRACKING_KIT_CLASS = "Lcom/shopee/live/livewrapper/sztrackingkit/a;"
-private const val MMC_STATUS_CLASS = "Lcom/mmc/player/utils/MMCStatus;"
 private const val LIVE_INFO_ENTITY_TYPE = "Lcom/shopee/livetechsdk/trackreport/LiveInfoEntity;"
 private const val ABSTRACT_EVENT_CREATOR_TYPE =
     "Lcom/shopee/livetechsdk/trackreport/creator/AbstractSZTrackingEventCreator;"
@@ -55,14 +54,14 @@ internal val MmsTransportP2pPercentageFingerprint = Fingerprint(
     parameters = listOf(),
 )
 
-internal val LIVE_ABTEST_TRUE_FINGERPRINTS = listOf(
-    "enableDnsIpv4Only",
-    "enableLivestreamPreCreateDecoder",
-    "getMediaCodecGetFrameOpt",
-    "enableFDKAAC",
-    "useDummyViewOpt",
-    "getBanSwitchUrlOnLowestLevel",
-).map { methodName ->
+internal val SzHardwareCodecEnabledFingerprint = Fingerprint(
+    definingClass = "Lcom/shopee/szconfigurationcenter/b;",
+    name = "f",
+    returnType = "Z",
+    parameters = listOf(),
+)
+
+private fun abTestTrue(vararg names: String) = names.map { methodName ->
     Fingerprint(
         definingClass = MMC_AB_TEST_CLASS,
         name = methodName,
@@ -70,6 +69,20 @@ internal val LIVE_ABTEST_TRUE_FINGERPRINTS = listOf(
         parameters = listOf(),
     )
 }
+
+// Safe: faster connect/startup, no buffer or decoder behavior change.
+internal val LIVE_ABTEST_SAFE_FINGERPRINTS = abTestTrue(
+    "enableDnsIpv4Only",
+    "enableLivestreamPreCreateDecoder",
+)
+
+// Aggressive: smaller buffers / low-delay decode; can stutter on jittery networks or some SoCs.
+internal val LIVE_ABTEST_AGGRESSIVE_FINGERPRINTS = abTestTrue(
+    "getMediaCodecGetFrameOpt",
+    "enableFDKAAC",
+    "useDummyViewOpt",
+    "getBanSwitchUrlOnLowestLevel",
+)
 
 internal val HardwareDecoderEnableLowDelayFingerprint = Fingerprint(
     definingClass = MMC_HARDWARE_DECODER_CLASS,
@@ -187,17 +200,5 @@ internal val LIVE_TELEMETRY_VOID_FINGERPRINTS = listOf(
         name = "start",
         returnType = "V",
         parameters = listOf("J"),
-    ),
-    Fingerprint(
-        definingClass = MMC_STATUS_CLASS,
-        name = "initThread",
-        returnType = "V",
-        parameters = listOf(),
-    ),
-    Fingerprint(
-        definingClass = MMC_STATUS_CLASS,
-        name = "initHandler",
-        returnType = "V",
-        parameters = listOf(),
     ),
 )
