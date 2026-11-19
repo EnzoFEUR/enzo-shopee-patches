@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.0.0-dev.3",
+  "version": "1.0.0-dev.4",
   "patches": [
     {
       "name": "Boost Shopee Live latency and quality",
@@ -90,6 +90,15 @@
           "key": "disableLiveTelemetryAndSnapshots",
           "title": "Disable Live telemetry & snapshot uploads",
           "description": "Disables continuous live QoS/heartbeat reporters, CPU/thermal polling threads, and hidden playback screenshot sampling/uploads.",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": true,
+          "values": null
+        },
+        {
+          "key": "instantPromoPriceRefresh",
+          "title": "Instant live promo price refresh",
+          "description": "Eliminates the client-side random stagger timer and card switch animation delay on live promo price changes so price drops fetch and render immediately.",
           "required": false,
           "type": "kotlin.Boolean",
           "default": true,
@@ -268,8 +277,8 @@
       "options": []
     },
     {
-      "name": "Hide Shopee Video and Live",
-      "description": "Removes the Shopee Live & Video homepage section before view inflation, disables homepage video autoplay/refresh jobs, and optionally hides the Live & Video bottom navigation tab.",
+      "name": "Hide Shopee Videos",
+      "description": "Hides Shopee Video homepage shelves, video refresh jobs, video bottom-bar red dots, and standalone Video bottom tabs while keeping Shopee Live visible by default.",
       "default": false,
       "category": null,
       "compatiblePackages": [
@@ -301,9 +310,18 @@
       ],
       "options": [
         {
+          "key": "keepShopeeLive",
+          "title": "Keep Shopee Live visible",
+          "description": "Preserves Shopee Live homepage shelves, autoplay/previews, and Live/Live+Video bottom tabs while hiding Shopee Video.",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": true,
+          "values": null
+        },
+        {
           "key": "hideHomeLiveAndVideo",
-          "title": "Hide homepage Shopee Live & Video cards",
-          "description": "Omits the Shopee Live & Video section on the home feed and disables autoplay and background ad-refresh jobs.",
+          "title": "Hide homepage Shopee Video sections",
+          "description": "Omits Video / combined Live+Video shelves on the home feed and disables video refresh/ad-refresh background jobs.",
           "required": false,
           "type": "kotlin.Boolean",
           "default": true,
@@ -311,8 +329,8 @@
         },
         {
           "key": "hideBottomVideoTab",
-          "title": "Hide Live & Video bottom navigation tab",
-          "description": "Filters the Live & Video tab out of the bottom bar and disables red-dot/icon animations.",
+          "title": "Hide Shopee Video bottom navigation tab",
+          "description": "Filters Video tabs out of the bottom bar and disables the video red-dot prompt.",
           "required": false,
           "type": "kotlin.Boolean",
           "default": true,
@@ -322,7 +340,7 @@
     },
     {
       "name": "Optimize item and network loading",
-      "description": "Accelerates product, PDP, and feed loading by enabling Cronet Zstd/QUIC prewarming and multi-IP failover, native PDP prefetching, multi-threaded feed decode, instant image rendering, and removing per-request network and image telemetry overhead.",
+      "description": "Accelerates product, PDP, checkout, and feed loading by enabling Cronet Zstd/QUIC prewarming and multi-IP failover, native PDP prefetching, background React Native context/bundle prewarming, multi-threaded feed decode, instant image rendering, and removing per-request network and image telemetry overhead.",
       "default": true,
       "category": null,
       "compatiblePackages": [
@@ -366,6 +384,15 @@
           "key": "enableFeedAndPdpPrefetch",
           "title": "Enable native PDP & feed performance toggles",
           "description": "Enables native product-detail prefetching, multi-threaded feed decode, image preloading, lazy tab bar, ANR fixes, and disables home GIF decoding and feed AptLog telemetry.",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": true,
+          "values": null
+        },
+        {
+          "key": "prewarmCheckoutAndRnContainer",
+          "title": "Prewarm Checkout & React Native container",
+          "description": "Pre-creates the React Native context asynchronously, preloads the base JS bundle, skips JS preload startup delays, and removes Hermes debug overhead so Checkout and Cart screens open faster.",
           "required": false,
           "type": "kotlin.Boolean",
           "default": true,

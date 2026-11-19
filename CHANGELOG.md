@@ -1,3 +1,9 @@
+## [1.0.0-dev.4](https://github.com/EnzoFEUR/enzo-shopee-patches/compare/v1.0.0-dev.3...v1.0.0-dev.4) (2026-11-19)
+
+### ✨ New Features
+
+* add instant live promo price refresh, RN checkout prewarm, and keep-live video hide ([39e5f12](https://github.com/EnzoFEUR/enzo-shopee-patches/commit/39e5f126e9329b19bd5bc295e6fddbd6efdf1147))
+
 ## [1.0.0-dev.3](https://github.com/EnzoFEUR/enzo-shopee-patches/compare/v1.0.0-dev.2...v1.0.0-dev.3) (2026-11-19)
 
 ### 🐛 Bug Fixes

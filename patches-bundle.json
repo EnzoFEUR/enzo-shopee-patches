@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-11-19T06:42:36",
-  "description": "## [1.0.0-dev.3](https://github.com/EnzoFEUR/enzo-shopee-patches/compare/v1.0.0-dev.2...v1.0.0-dev.3) (2026-11-19)\n\n### 🐛 Bug Fixes\n\n* **live:** eliminate stutter/lag defaults, enable hardware decode & keep-pulling, gate aggressive low-delay mode ([c39956a](https://github.com/EnzoFEUR/enzo-shopee-patches/commit/c39956a8a5c0446d3a1dd56bc305086d80956b31))",
-  "download_url": "https://github.com/EnzoFEUR/enzo-shopee-patches/releases/download/v1.0.0-dev.3/patches-1.0.0-dev.3.mpp",
+  "created_at": "2026-11-19T10:16:41",
+  "description": "## [1.0.0-dev.4](https://github.com/EnzoFEUR/enzo-shopee-patches/compare/v1.0.0-dev.3...v1.0.0-dev.4) (2026-11-19)\n\n### ✨ New Features\n\n* add instant live promo price refresh, RN checkout prewarm, and keep-live video hide ([39e5f12](https://github.com/EnzoFEUR/enzo-shopee-patches/commit/39e5f126e9329b19bd5bc295e6fddbd6efdf1147))",
+  "download_url": "https://github.com/EnzoFEUR/enzo-shopee-patches/releases/download/v1.0.0-dev.4/patches-1.0.0-dev.4.mpp",
   "signature_download_url": "",
-  "version": "1.0.0-dev.3"
+  "version": "1.0.0-dev.4"
 }
