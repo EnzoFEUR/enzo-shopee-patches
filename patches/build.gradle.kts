@@ -1,14 +1,13 @@
-group = "app.template"
+group = "app.enzofeur.shopee"
 
 patches {
-    // TODO: Update this section with your project details.
     about {
-        name = "UserXYZ Patches"
-        description = "Patches for apps I like"
-        source = "git@github.com:UserXYZ/morphe-patches.git"
-        author = "Awesome dev"
-        contact = "na"
-        website = "na"
+        name = "Enzo Shopee Patches"
+        description = "Performance and ad/telemetry reduction patches for Shopee Android"
+        source = "git@github.com:EnzoFEUR/enzo-shopee-patches.git"
+        author = "EnzoFEUR"
+        contact = "https://github.com/EnzoFEUR/enzo-shopee-patches/issues"
+        website = "https://github.com/EnzoFEUR/enzo-shopee-patches"
         license = "GPLv3"
     }
 }
@@ -20,6 +19,7 @@ val patchListGeneratorClasspath = configurations.create("patchListGeneratorClass
 dependencies {
     compileOnly(libs.gson)
     patchListGeneratorClasspath(libs.gson)
+    testImplementation(libs.junit)
 }
 
 tasks {
