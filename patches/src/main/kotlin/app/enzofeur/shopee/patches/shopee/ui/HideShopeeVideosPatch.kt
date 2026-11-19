@@ -16,29 +16,37 @@ private const val EXTENSION_CLASS = "Lapp/enzofeur/shopee/extension/ShopeeExtens
 
 @Suppress("unused")
 val hideShopeeVideosPatch = patch(
-    name = "Hide Shopee Video and Live",
-    description = "Removes the Shopee Live & Video homepage section before view inflation, disables homepage video autoplay/refresh jobs, and optionally hides the Live & Video bottom navigation tab.",
+    name = "Hide Shopee Videos",
+    description = "Hides Shopee Video homepage shelves, video refresh jobs, video bottom-bar red dots, and standalone Video bottom tabs while keeping Shopee Live visible by default.",
     default = false,
 ) {
     compatibleWith(COMPATIBILITY_SHOPEE_PH)
 
     extendWith("extensions/extension.mpe")
 
+    val keepShopeeLive by booleanOption(
+        key = "keepShopeeLive",
+        default = true,
+        title = "Keep Shopee Live visible",
+        description = "Preserves Shopee Live homepage shelves, autoplay/previews, and Live/Live+Video bottom tabs while hiding Shopee Video.",
+    )
+
     val hideHomeLiveAndVideo by booleanOption(
         key = "hideHomeLiveAndVideo",
         default = true,
-        title = "Hide homepage Shopee Live & Video cards",
-        description = "Omits the Shopee Live & Video section on the home feed and disables autoplay and background ad-refresh jobs.",
+        title = "Hide homepage Shopee Video sections",
+        description = "Omits Video / combined Live+Video shelves on the home feed and disables video refresh/ad-refresh background jobs.",
     )
 
     val hideBottomVideoTab by booleanOption(
         key = "hideBottomVideoTab",
         default = true,
-        title = "Hide Live & Video bottom navigation tab",
-        description = "Filters the Live & Video tab out of the bottom bar and disables red-dot/icon animations.",
+        title = "Hide Shopee Video bottom navigation tab",
+        description = "Filters Video tabs out of the bottom bar and disables the video red-dot prompt.",
     )
 
     execute {
+        val keepLive = keepShopeeLive == true
         val hideHome = hideHomeLiveAndVideo == true
         val hideTab = hideBottomVideoTab == true
         var matched = 0
@@ -63,9 +71,25 @@ val hideShopeeVideosPatch = patch(
                 matched++
             }
 
-            MappingRulesEnableShopeeLiveFingerprint.methodOrNull?.let {
-                it.returnEarly("disable_live_streaming_1")
-                matched++
+            if (!keepLive) {
+                HOME_LIVE_FALSE_FINGERPRINTS.forEach { fingerprint ->
+                    fingerprint.methodOrNull?.let {
+                        it.returnEarly(false)
+                        matched++
+                    }
+                }
+
+                HOME_LIVE_VOID_FINGERPRINTS.forEach { fingerprint ->
+                    fingerprint.methodOrNull?.let {
+                        it.returnEarly()
+                        matched++
+                    }
+                }
+
+                MappingRulesEnableShopeeLiveFingerprint.methodOrNull?.let {
+                    it.returnEarly("disable_live_streaming_1")
+                    matched++
+                }
             }
         }
 
@@ -75,18 +99,21 @@ val hideShopeeVideosPatch = patch(
                 matched++
             }
 
-            BottomTabStartAnimationFingerprint.methodOrNull?.let {
-                it.returnEarly()
-                matched++
+            if (!keepLive) {
+                BottomTabStartAnimationFingerprint.methodOrNull?.let {
+                    it.returnEarly()
+                    matched++
+                }
             }
 
+            val tabFilterHelper = if (keepLive) "filterVideoOnlyTabs" else "filterVideoAndLiveTabs"
             BottomTabGetTabViewDataFingerprint.methodOrNull?.let { method ->
                 method.findInstructionIndicesReversedOrThrow(opcode(Opcode.RETURN_OBJECT)).forEach { index ->
                     val register = method.getInstruction<OneRegisterInstruction>(index).registerA
                     method.addInstructionsAtControlFlowLabel(
                         index,
                         """
-                            invoke-static { v$register }, $EXTENSION_CLASS->filterVideoAndLiveTabs(Ljava/util/List;)Ljava/util/List;
+                            invoke-static { v$register }, $EXTENSION_CLASS->$tabFilterHelper(Ljava/util/List;)Ljava/util/List;
                             move-result-object v$register
                         """,
                     )

@@ -4,13 +4,19 @@ import app.enzofeur.shopee.patches.shared.Constants.COMPATIBILITY_SHOPEE_PH
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.opcode
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.patch
 import app.morphe.patcher.patch.stringOption
+import app.morphe.patcher.util.findInstructionIndicesReversedOrThrow
 import app.morphe.patcher.util.returnEarly
 import app.morphe.patcher.util.smali.ExternalLabel
+import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val EXTENSION_CLASS = "Lapp/enzofeur/shopee/extension/ShopeeExtension;"
 private const val MMC_PLAYER_CONFIG_CLASS = "Lcom/mmc/player/MMCPlayerConfig;"
@@ -78,6 +84,13 @@ val boostShopeeLivePatch = patch(
         description = "Disables continuous live QoS/heartbeat reporters, CPU/thermal polling threads, and hidden playback screenshot sampling/uploads.",
     )
 
+    val instantPromoPriceRefresh by booleanOption(
+        key = "instantPromoPriceRefresh",
+        default = true,
+        title = "Instant live promo price refresh",
+        description = "Eliminates the client-side random stagger timer and card switch animation delay on live promo price changes so price drops fetch and render immediately.",
+    )
+
     execute {
         val preset = (liveResolution ?: "auto").trim().lowercase()
         if (preset !in VALID_RESOLUTION_PRESETS) {
@@ -89,6 +102,7 @@ val boostShopeeLivePatch = patch(
         val aggressive = aggressiveLowDelay == true
         val noP2p = disableLiveP2p == true
         val noTelemetry = disableLiveTelemetryAndSnapshots == true
+        val instantPrice = instantPromoPriceRefresh == true
         val presetConfig = "$preset:${if (lock) 1 else 0}:${if (noP2p) 1 else 0}"
         var matched = 0
 
@@ -225,7 +239,50 @@ val boostShopeeLivePatch = patch(
             }
         }
 
-        if ((preset != "auto" || boost || aggressive || noP2p || noTelemetry) && matched == 0) {
+        if (instantPrice) {
+            LiveFinalPriceJitterFingerprint.methodOrNull?.let { method ->
+                method.addInstructions(0, "const-wide/16 p3, 0x0")
+                matched++
+            }
+
+            listOf(
+                ShowingProductControllerSupportFinalPriceFingerprint,
+                AudienceProductShowViewSupportFinalPriceFingerprint,
+            ).forEach { fingerprint ->
+                fingerprint.methodOrNull?.let { method ->
+                    method.findInstructionIndicesReversedOrThrow(opcode(Opcode.INVOKE_STATIC))
+                        .firstOrNull { index ->
+                            val ref = (method.getInstruction<Instruction>(index) as? ReferenceInstruction)
+                                ?.reference as? MethodReference
+                            ref?.definingClass == "Lcom/shopee/live/livewrapper/abtest/h;" && ref.name == "a"
+                        }?.let { invokeIndex ->
+                            val moveIndex = invokeIndex + 1
+                            if (method.getInstruction<Instruction>(moveIndex).opcode == Opcode.MOVE_RESULT) {
+                                val reg = method.getInstruction<OneRegisterInstruction>(moveIndex).registerA
+                                method.addInstructions(moveIndex + 1, "const/4 v$reg, 0x1")
+                                matched++
+                            }
+                        }
+                }
+            }
+
+            AudienceProductShowViewInitFingerprint.methodOrNull?.let { method ->
+                method.findInstructionIndicesReversedOrThrow(opcode(Opcode.INVOKE_VIRTUAL))
+                    .firstOrNull { index ->
+                        val ref = (method.getInstruction<Instruction>(index) as? ReferenceInstruction)
+                            ?.reference as? MethodReference
+                        ref?.definingClass == "Landroid/animation/ValueAnimator;" && ref.name == "setDuration"
+                    }?.let { invokeIndex ->
+                        if (invokeIndex > 0 && method.getInstruction<Instruction>(invokeIndex - 1).opcode == Opcode.CONST_WIDE_16) {
+                            val durReg = method.getInstruction<OneRegisterInstruction>(invokeIndex - 1).registerA
+                            method.addInstructions(invokeIndex, "const-wide/16 v$durReg, 0x32")
+                            matched++
+                        }
+                    }
+            }
+        }
+
+        if ((preset != "auto" || boost || aggressive || noP2p || noTelemetry || instantPrice) && matched == 0) {
             throw PatchException("No Shopee Live latency/quality target methods matched.")
         }
     }

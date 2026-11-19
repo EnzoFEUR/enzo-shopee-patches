@@ -95,14 +95,17 @@ internal val LiveCellDispatchIsValidFingerprint = Fingerprint(
 
 internal val HOME_VIDEO_FALSE_FINGERPRINTS = listOf(
     ToggleLiveAndVideoEnabledFingerprint,
-    ToggleLiveSectionEnabledFingerprint,
-    ToggleAutoPlayOnFingerprint,
-    ToggleLivestreamAutoplayFingerprint,
-    ToggleLivestreamAutoplayAllFingerprint,
     ToggleHomepageRefreshVideoFingerprint,
     ToggleHomepageRefreshLiveAdsFingerprint,
     LiveAndVideoCellIsValidFingerprint,
     LiveAndVideoCellDispatchIsValidFingerprint,
+)
+
+internal val HOME_LIVE_FALSE_FINGERPRINTS = listOf(
+    ToggleLiveSectionEnabledFingerprint,
+    ToggleAutoPlayOnFingerprint,
+    ToggleLivestreamAutoplayFingerprint,
+    ToggleLivestreamAutoplayAllFingerprint,
     LiveCellIsValidFingerprint,
     LiveCellDispatchIsValidFingerprint,
 )
@@ -144,10 +147,13 @@ internal val LiveInvalidAdsWithinJobFingerprint = Fingerprint(
 
 internal val HOME_VIDEO_VOID_FINGERPRINTS = listOf(
     LiveAndVideoCellRefreshFingerprint,
-    LiveCellRefreshFingerprint,
     LiveAdsOutsideJobFingerprint,
     LiveInvalidAdsOutsideJobFingerprint,
     LiveInvalidAdsWithinJobFingerprint,
+)
+
+internal val HOME_LIVE_VOID_FINGERPRINTS = listOf(
+    LiveCellRefreshFingerprint,
 )
 
 internal val MappingRulesEnableLiveAndVideoFingerprint = Fingerprint(

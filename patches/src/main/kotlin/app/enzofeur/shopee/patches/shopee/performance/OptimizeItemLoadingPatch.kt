@@ -10,7 +10,7 @@ import app.morphe.patcher.util.returnEarly
 @Suppress("unused")
 val optimizeItemLoadingPatch = patch(
     name = "Optimize item and network loading",
-    description = "Accelerates product, PDP, and feed loading by enabling Cronet Zstd/QUIC prewarming and multi-IP failover, native PDP prefetching, multi-threaded feed decode, instant image rendering, and removing per-request network and image telemetry overhead.",
+    description = "Accelerates product, PDP, checkout, and feed loading by enabling Cronet Zstd/QUIC prewarming and multi-IP failover, native PDP prefetching, background React Native context/bundle prewarming, multi-threaded feed decode, instant image rendering, and removing per-request network and image telemetry overhead.",
     default = true,
 ) {
     compatibleWith(COMPATIBILITY_SHOPEE_PH)
@@ -29,6 +29,13 @@ val optimizeItemLoadingPatch = patch(
         description = "Enables native product-detail prefetching, multi-threaded feed decode, image preloading, lazy tab bar, ANR fixes, and disables home GIF decoding and feed AptLog telemetry.",
     )
 
+    val prewarmCheckoutAndRnContainer by booleanOption(
+        key = "prewarmCheckoutAndRnContainer",
+        default = true,
+        title = "Prewarm Checkout & React Native container",
+        description = "Pre-creates the React Native context asynchronously, preloads the base JS bundle, skips JS preload startup delays, and removes Hermes debug overhead so Checkout and Cart screens open faster.",
+    )
+
     val instantProductImages by booleanOption(
         key = "instantProductImages",
         default = true,
@@ -39,6 +46,7 @@ val optimizeItemLoadingPatch = patch(
     execute {
         val boostCronet = enableCronetNetworkBoost == true
         val boostFeed = enableFeedAndPdpPrefetch == true
+        val prewarmRn = prewarmCheckoutAndRnContainer == true
         val boostImages = instantProductImages == true
         var matched = 0
 
@@ -74,6 +82,26 @@ val optimizeItemLoadingPatch = patch(
             }
         }
 
+        if (prewarmRn) {
+            PRE_CREATE_RN_TRUE_FINGERPRINTS.forEach { fingerprint ->
+                fingerprint.methodOrNull?.let {
+                    it.returnEarly(true)
+                    matched++
+                }
+            }
+
+            JsPreloadDelayEnabledInvokeFingerprint.methodOrNull?.let { method ->
+                method.addInstructions(
+                    0,
+                    """
+                        sget-object v0, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;
+                        return-object v0
+                    """,
+                )
+                matched++
+            }
+        }
+
         if (boostImages) {
             IMAGE_TELEMETRY_VOID_FINGERPRINTS.forEach { fingerprint ->
                 fingerprint.methodOrNull?.let {
@@ -99,7 +127,7 @@ val optimizeItemLoadingPatch = patch(
             }
         }
 
-        if ((boostCronet || boostFeed || boostImages) && matched == 0) {
+        if ((boostCronet || boostFeed || prewarmRn || boostImages) && matched == 0) {
             throw PatchException("No Shopee item/network optimization target methods matched.")
         }
     }

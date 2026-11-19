@@ -149,3 +149,28 @@ internal val ImageCrossFadeDurationFingerprint = Fingerprint(
     returnType = "Ljava/lang/Long;",
     parameters = listOf(),
 )
+
+private const val PRE_CREATE_RN_CONFIG_CLASS =
+    "Lcom/shopee/app/container/rn/react/perf/RNContainerOptHelper\$PreCreateRNContextConfig;"
+
+internal val PRE_CREATE_RN_TRUE_FINGERPRINTS = listOf(
+    "getEnablePreCreateContext",
+    "allScene",
+    "getEnableCreateContextInAsyncThread",
+    "getEnablePreLoadBaseBundle",
+    "getEnableRemoveHermesDebugExecute",
+).map { methodName ->
+    Fingerprint(
+        definingClass = PRE_CREATE_RN_CONFIG_CLASS,
+        name = methodName,
+        returnType = "Z",
+        parameters = listOf(),
+    )
+}
+
+internal val JsPreloadDelayEnabledInvokeFingerprint = Fingerprint(
+    definingClass = "Lcom/shopee/app/container/rn/perf/h;",
+    name = "invoke",
+    returnType = "Ljava/lang/Object;",
+    parameters = listOf(),
+)

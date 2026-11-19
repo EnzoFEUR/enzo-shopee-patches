@@ -33,6 +33,13 @@ public final class ShopeeExtension {
             "shopee_live"
     ));
 
+    private static final Set<String> HIDDEN_VIDEO_ONLY_TAB_IDENTIFIERS = new HashSet<String>(Arrays.asList(
+            "video",
+            "shopee_video",
+            "video_mixtab",
+            "mixtab"
+    ));
+
     private ShopeeExtension() {
     }
 
@@ -41,6 +48,18 @@ public final class ShopeeExtension {
      * without regex allocation, preserving the original list if fewer than two tabs would remain.
      */
     public static List<?> filterVideoAndLiveTabs(List<?> tabs) {
+        return filterTabsByIds(tabs, HIDDEN_TAB_IDENTIFIERS);
+    }
+
+    /**
+     * Filters pure Shopee Video entries out of {@code BottomTabManager.getTabViewData()} while
+     * keeping Shopee Live and combined Live+Video tabs visible.
+     */
+    public static List<?> filterVideoOnlyTabs(List<?> tabs) {
+        return filterTabsByIds(tabs, HIDDEN_VIDEO_ONLY_TAB_IDENTIFIERS);
+    }
+
+    private static List<?> filterTabsByIds(List<?> tabs, Set<String> hiddenIds) {
         if (tabs == null || tabs.size() <= 2) {
             return tabs;
         }
@@ -48,7 +67,7 @@ public final class ShopeeExtension {
         ArrayList<Object> filtered = new ArrayList<Object>(tabs.size());
         for (int i = 0; i < tabs.size(); i++) {
             Object tab = tabs.get(i);
-            if (!isVideoOrLiveTab(tab)) {
+            if (!isTabMatchingIds(tab, hiddenIds)) {
                 filtered.add(tab);
             }
         }
@@ -61,17 +80,25 @@ public final class ShopeeExtension {
     }
 
     static boolean isVideoOrLiveTab(Object tab) {
+        return isTabMatchingIds(tab, HIDDEN_TAB_IDENTIFIERS);
+    }
+
+    static boolean isVideoOnlyTab(Object tab) {
+        return isTabMatchingIds(tab, HIDDEN_VIDEO_ONLY_TAB_IDENTIFIERS);
+    }
+
+    private static boolean isTabMatchingIds(Object tab, Set<String> hiddenIds) {
         if (tab == null) {
             return false;
         }
 
         String desc = String.valueOf(tab).toLowerCase(Locale.ROOT);
-        return isHiddenToken(extractField(desc, "tabtype="))
-                || isHiddenToken(extractField(desc, "tabid="));
+        return isHiddenToken(extractField(desc, "tabtype="), hiddenIds)
+                || isHiddenToken(extractField(desc, "tabid="), hiddenIds);
     }
 
-    private static boolean isHiddenToken(String value) {
-        return value != null && HIDDEN_TAB_IDENTIFIERS.contains(value);
+    private static boolean isHiddenToken(String value, Set<String> hiddenIds) {
+        return value != null && hiddenIds.contains(value);
     }
 
     private static String extractField(String text, String key) {

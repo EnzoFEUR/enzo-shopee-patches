@@ -202,3 +202,31 @@ internal val LIVE_TELEMETRY_VOID_FINGERPRINTS = listOf(
         parameters = listOf("J"),
     ),
 )
+
+internal val LiveFinalPriceJitterFingerprint = Fingerprint(
+    definingClass = "Lcom/shopee/live/livestreaming/feature/product/vm/g;",
+    name = "d",
+    returnType = "V",
+    parameters = listOf("I", "J", "J", "J", "J", "J", "Ljava/lang/Long;", "Z"),
+)
+
+internal val ShowingProductControllerSupportFinalPriceFingerprint = Fingerprint(
+    definingClass = "Lcom/shopee/live/livestreaming/audience/live/feature/showingproduct/s;",
+    name = "q",
+    returnType = "Z",
+    parameters = listOf("Lcom/shopee/live/livestreaming/feature/product/data/ProductInfoEntity;"),
+)
+
+internal val AudienceProductShowViewSupportFinalPriceFingerprint = Fingerprint(
+    definingClass = "Lcom/shopee/live/livestreaming/audience/view/AudienceProductShowView;",
+    name = "q",
+    returnType = "Z",
+    parameters = listOf("Lcom/shopee/live/livestreaming/feature/product/data/ProductInfoEntity;"),
+)
+
+internal val AudienceProductShowViewInitFingerprint = Fingerprint(
+    definingClass = "Lcom/shopee/live/livestreaming/audience/view/AudienceProductShowView;",
+    name = "<init>",
+    returnType = "V",
+    parameters = listOf("Landroid/content/Context;", "Landroid/util/AttributeSet;"),
+)
