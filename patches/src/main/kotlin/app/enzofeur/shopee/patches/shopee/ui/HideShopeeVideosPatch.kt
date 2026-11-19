@@ -18,7 +18,7 @@ private const val EXTENSION_CLASS = "Lapp/enzofeur/shopee/extension/ShopeeExtens
 val hideShopeeVideosPatch = patch(
     name = "Hide Shopee Video and Live",
     description = "Removes the Shopee Live & Video homepage section before view inflation, disables homepage video autoplay/refresh jobs, and optionally hides the Live & Video bottom navigation tab.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(COMPATIBILITY_SHOPEE_PH)
 

@@ -4,7 +4,7 @@ Performance and ad/telemetry reduction [Morphe](https://morphe.software) patches
 
 ## ❓ About
 
-Shopee Lite-style optimization patches for `com.shopee.ph` (`3.85.28`), combining manifest telemetry/registrar cleanup, invasive permission trimming, and verified bytecode short-circuits for `ShopeeTracker`, cold-start `LuBanSDK`/APM valves, and Live/Video auto-preloading.
+Shopee Lite-style optimization patches for `com.shopee.ph` (`3.85.28`), combining manifest telemetry/registrar cleanup, invasive permission trimming, verified bytecode short-circuits for `ShopeeTracker`, cold-start `LuBanSDK`/APM valves, Live & Video auto-preload control, low-latency Live Selling tuning with stream resolution selection, Cronet/item/image loading optimization, and background WorkManager suppression.
 
 > [!NOTE]
 > **Sign-in & `F13` notes:** Shopee enforces APK signature and integrity checks (`F13`). Re-signed APKs cannot use native Google Sign-In, Facebook SSO, Passkeys, or Google SMS Retriever auto-fill because those bind to Shopee's official signing certificate — use **Phone/Email + Password + WhatsApp OTP** to sign in cleanly. This repository intentionally does **not** include signature, anti-tamper, Play Integrity, or ShopeePay/checkout security bypasses.
@@ -20,6 +20,7 @@ Once published to GitHub, click the button below or manually add this repository
 ## 📦 Best Target APK
 
 - **Recommended package & version:** `com.shopee.ph` **v3.85.28** (latest stable, non-beta **`arm64-v8a`** `.apkm` split bundle from APKMirror).
+- **Watching Shopee Live Selling?** Shopee ships Live Selling (`livestreaming`) as a Play Dynamic Feature Module that is missing from APKMirror `.apkm` bundles and cannot download on re-signed builds. To watch Live Selling in a patched APK: install official Shopee from Google Play, open **Live** once so Play downloads the `livestreaming` split, extract the complete installed split bundle via **AntiSplit-M**, and patch that bundle (keeping **Hide Shopee Video and Live** disabled if you want Live entrypoints visible).
 - **Why not Shopee Lite?** Shopee Lite is tailored primarily to the Indonesia market (`com.shopee.id` / local payment integrations) and is incompatible with PH/other regional accounts and promos.
 - **Never commit APKs:** Place local test bundles under `apks/` (gitignored along with `*.apk`, `*.apkm`, `*.apks`, and `*.xapk`).
 
@@ -84,8 +85,7 @@ The built patch bundle `.mpp` is output to `patches/build/libs/patches-*.mpp` an
 
 ## 🗺️ Roadmap
 
-- **Implemented (Phase 1 + Phase 2 Core):** Deep manifest telemetry/registrar deactivation, `ShopeeTracker` kill-switch, cold-start APM/`LuBanSDK`/logging valves, Live & Video auto-preload killer, background boot receiver suppressor, multi-ABI stripping, and opt-in permission trimmer (verified against `com.shopee.ph` `3.85.28`).
-- **Optional UI polish (next):** Hiding Video/Live bottom tabs and suppressing non-essential data-collection popups after testing Phase 2 Core on device.
+- **Implemented:** Deep manifest telemetry/registrar deactivation, `ShopeeTracker` kill-switch, cold-start APM/`LuBanSDK`/logging valves, Live & Video auto-preload control, background boot receiver suppressor, multi-ABI stripping, opt-in permission trimmer, opt-in Video/Live UI hiding, Live low-latency network & decoder boost with LAS resolution preset picker, Cronet/PDP/image loading optimization, and background WorkManager uploader suppression (verified against `com.shopee.ph` `3.85.28`).
 
 ## 📜 License
 
