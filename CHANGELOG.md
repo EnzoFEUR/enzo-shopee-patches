@@ -1,3 +1,11 @@
+## [1.0.0-dev.2](https://github.com/EnzoFEUR/enzo-shopee-patches/compare/v1.0.0-dev.1...v1.0.0-dev.2) (2026-11-19)
+
+### ✨ New Features
+
+* add Hide Shopee Video and Live homepage and bottom tab patch ([96305f6](https://github.com/EnzoFEUR/enzo-shopee-patches/commit/96305f66a17ef94d843a66a2054337a6c87b3404))
+* add Live low-latency boost with resolution picker, item/Cronet loading optimizer, and background worker stopper ([16b9d18](https://github.com/EnzoFEUR/enzo-shopee-patches/commit/16b9d18bcc09e6b60a0945abfc7e01a12b5a04c8))
+* add Shopee Lite Phase 2 telemetry, APM valve, video preload, and permission patches ([9902caa](https://github.com/EnzoFEUR/enzo-shopee-patches/commit/9902caa4b3fc4c98bdf7f58c1902209b045e25fb))
+
 ## 1.0.0-dev.1 (2026-11-19)
 
 ### ✨ New Features

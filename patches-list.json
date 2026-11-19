@@ -1,10 +1,164 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.0.0-dev.1",
+  "version": "1.0.0-dev.2",
   "patches": [
     {
+      "name": "Boost Shopee Live latency and quality",
+      "description": "Applies low-latency live player optimizations (IPv4-only DNS, decoder pre-creation, hardware low-delay decoding, zero P2P uploads), adds a stream resolution preset picker (Lowest/Fast/Balanced/Highest/Auto), and stops live telemetry heartbeats and hidden screenshot uploads.",
+      "default": true,
+      "category": null,
+      "compatiblePackages": [
+        {
+          "packageName": "com.shopee.ph",
+          "name": "Shopee PH",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#EE4D2D",
+          "signatures": null,
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "3.85.28",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
+              "version": null,
+              "versionCodes": null,
+              "isExperimental": true,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "liveResolution",
+          "title": "Live stream resolution preset",
+          "description": "Selects Shopee Live resolution tier. Lowest gives fastest startup and minimal delay; Highest picks maximum quality.",
+          "required": true,
+          "type": "kotlin.String",
+          "default": "lowest",
+          "values": {
+            "Lowest (Fastest / Minimal Delay)": "lowest",
+            "Fast (480p / 540p)": "fast",
+            "Balanced (720p)": "balanced",
+            "Highest (1080p / Best Quality)": "highest",
+            "Auto (Shopee Default ABR)": "auto"
+          }
+        },
+        {
+          "key": "lockSelectedResolution",
+          "title": "Lock selected resolution",
+          "description": "Locks the manifest to the selected resolution tier to eliminate mid-stream ABR switching stalls (ignored when Auto is selected).",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": true,
+          "values": null
+        },
+        {
+          "key": "lowLatencyNetworkBoost",
+          "title": "Enable low-latency network & decoder boost",
+          "description": "Forces IPv4-only live DNS, buffer optimization, link reuse, decoder pre-creation, MediaCodec low-delay mode, and FDK-AAC.",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": true,
+          "values": null
+        },
+        {
+          "key": "disableLiveP2p",
+          "title": "Disable Live P2P peer uploading",
+          "description": "Prevents WebRTC/STUN peer-to-peer stream sharing during Live sessions to avoid upload bandwidth drain and peer stall latency.",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": true,
+          "values": null
+        },
+        {
+          "key": "disableLiveTelemetryAndSnapshots",
+          "title": "Disable Live telemetry & snapshot uploads",
+          "description": "Disables continuous live QoS/heartbeat reporters, CPU/thermal polling threads, and hidden playback screenshot sampling/uploads.",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": true,
+          "values": null
+        }
+      ]
+    },
+    {
+      "name": "Disable Live and Video auto-preloading",
+      "description": "Disables background Shopee Video download, floating Live video, and Check-In widget components and skips eager Live/Video startup preloading and auto-landing prefetchers.",
+      "default": true,
+      "category": null,
+      "compatiblePackages": [
+        {
+          "packageName": "com.shopee.ph",
+          "name": "Shopee PH",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#EE4D2D",
+          "signatures": null,
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "3.85.28",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
+              "version": null,
+              "versionCodes": null,
+              "isExperimental": true,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable ShopeeTracker event collection",
+      "description": "Short-circuits ShopeeTracker event logging, MMAP buffer usage, scheduled uploads, and background flush calls while keeping ShopeeTrackerContentProvider intact for SESSION_ID reads.",
+      "default": true,
+      "category": null,
+      "compatiblePackages": [
+        {
+          "packageName": "com.shopee.ph",
+          "name": "Shopee PH",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#EE4D2D",
+          "signatures": null,
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "3.85.28",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
+              "version": null,
+              "versionCodes": null,
+              "isExperimental": true,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Disable ad and telemetry SDK components",
-      "description": "Disables third-party ad, attribution, and telemetry services, receivers, providers, and activities in AndroidManifest.xml to reduce startup overhead and background wakeups.",
+      "description": "Disables third-party and first-party telemetry/APM components, Firebase Analytics/Crashlytics/DataTransport registrars, and telemetry manifest flags in AndroidManifest.xml.",
       "default": true,
       "category": null,
       "compatiblePackages": [
@@ -71,6 +225,155 @@
       "options": []
     },
     {
+      "name": "Disable cold-start APM and profiler valves",
+      "description": "Skips non-critical cold-start APM, Firebase Analytics, logging pipeline valves, and Luban/StackLens background sampling to cut startup latency, CPU usage, and battery drain.",
+      "default": true,
+      "category": null,
+      "compatiblePackages": [
+        {
+          "packageName": "com.shopee.ph",
+          "name": "Shopee PH",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#EE4D2D",
+          "signatures": null,
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "3.85.28",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
+              "version": null,
+              "versionCodes": null,
+              "isExperimental": true,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Hide Shopee Video and Live",
+      "description": "Removes the Shopee Live & Video homepage section before view inflation, disables homepage video autoplay/refresh jobs, and optionally hides the Live & Video bottom navigation tab.",
+      "default": false,
+      "category": null,
+      "compatiblePackages": [
+        {
+          "packageName": "com.shopee.ph",
+          "name": "Shopee PH",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#EE4D2D",
+          "signatures": null,
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "3.85.28",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
+              "version": null,
+              "versionCodes": null,
+              "isExperimental": true,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "hideHomeLiveAndVideo",
+          "title": "Hide homepage Shopee Live & Video cards",
+          "description": "Omits the Shopee Live & Video section on the home feed and disables autoplay and background ad-refresh jobs.",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": true,
+          "values": null
+        },
+        {
+          "key": "hideBottomVideoTab",
+          "title": "Hide Live & Video bottom navigation tab",
+          "description": "Filters the Live & Video tab out of the bottom bar and disables red-dot/icon animations.",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": true,
+          "values": null
+        }
+      ]
+    },
+    {
+      "name": "Optimize item and network loading",
+      "description": "Accelerates product, PDP, and feed loading by enabling Cronet Zstd/QUIC prewarming and multi-IP failover, native PDP prefetching, multi-threaded feed decode, instant image rendering, and removing per-request network and image telemetry overhead.",
+      "default": true,
+      "category": null,
+      "compatiblePackages": [
+        {
+          "packageName": "com.shopee.ph",
+          "name": "Shopee PH",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#EE4D2D",
+          "signatures": null,
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "3.85.28",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
+              "version": null,
+              "versionCodes": null,
+              "isExperimental": true,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "enableCronetNetworkBoost",
+          "title": "Enable Cronet Zstd, prewarm, and telemetry removal",
+          "description": "Forces Cronet Zstd compression, URL prewarming, alternative connection setup, multi-address failover, and strips per-request Cronet/HttpDNS telemetry reporters.",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": true,
+          "values": null
+        },
+        {
+          "key": "enableFeedAndPdpPrefetch",
+          "title": "Enable native PDP & feed performance toggles",
+          "description": "Enables native product-detail prefetching, multi-threaded feed decode, image preloading, lazy tab bar, ANR fixes, and disables home GIF decoding and feed AptLog telemetry.",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": true,
+          "values": null
+        },
+        {
+          "key": "instantProductImages",
+          "title": "Instant product image rendering",
+          "description": "Eliminates Glide image fade-in animation delays and skips per-image performance telemetry callbacks and SDNS metrics uploads.",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": true,
+          "values": null
+        }
+      ]
+    },
+    {
       "name": "Patch smoke test",
       "description": "Adds a harmless manifest metadata marker so you can test whether a re-signed Shopee APK boots and logs in without triggering F13 integrity errors.",
       "default": false,
@@ -103,6 +406,68 @@
         }
       ],
       "options": []
+    },
+    {
+      "name": "Stop background telemetry and sync workers",
+      "description": "Short-circuits background WorkManager telemetry uploaders so Shopee stays dormant in the background without triggering WorkManager retry loops.",
+      "default": true,
+      "category": null,
+      "compatiblePackages": [
+        {
+          "packageName": "com.shopee.ph",
+          "name": "Shopee PH",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#EE4D2D",
+          "signatures": null,
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "3.85.28",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
+              "version": null,
+              "versionCodes": null,
+              "isExperimental": true,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "disableAptLogReupload",
+          "title": "Disable background AptLog re-upload worker",
+          "description": "Completes AptLogReuploadWorker immediately with Result.success() without waking the network.",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": true,
+          "values": null
+        },
+        {
+          "key": "disableBackgroundDataPointSync",
+          "title": "Disable background DataPoint sync worker (Experimental)",
+          "description": "Skips background HFSyncInfo/LFSyncInfo/MFSyncInfo/PermissionStatusSyncInfo reporting inside DataPointService. Kept off by default to avoid potential F13 risk on sensitive accounts.",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": false,
+          "values": null
+        },
+        {
+          "key": "disableBackgroundRnBundleSync",
+          "title": "Disable background React Native OTA bundle sync",
+          "description": "Stops BundleSyncService from downloading React Native OTA updates in the background while the app is closed.",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": false,
+          "values": null
+        }
+      ]
     },
     {
       "name": "Strip unused CPU architectures",
@@ -150,6 +515,40 @@
           }
         }
       ]
+    },
+    {
+      "name": "Trim invasive and battery-draining permissions",
+      "description": "Removes non-essential privacy, advertising, and background wake permissions (background location, AD_ID, call log, contacts, calendar, exact alarms, boot completed, OEM badges) while keeping camera, foreground location, notifications, and biometric auth intact.",
+      "default": false,
+      "category": null,
+      "compatiblePackages": [
+        {
+          "packageName": "com.shopee.ph",
+          "name": "Shopee PH",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#EE4D2D",
+          "signatures": null,
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "3.85.28",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
+              "version": null,
+              "versionCodes": null,
+              "isExperimental": true,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
     }
   ]
 }

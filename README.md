@@ -27,9 +27,9 @@ Once published to GitHub, click the button below or manually add this repository
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.0.0-dev.1](https://github.com/EnzoFEUR/enzo-shopee-patches/releases/tag/v1.0.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;4 patches total
+> **[v1.0.0-dev.2](https://github.com/EnzoFEUR/enzo-shopee-patches/releases/tag/v1.0.0-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;12 patches total
 <details open>
-<summary>📦 Shopee PH&nbsp;&nbsp;•&nbsp;&nbsp;4 patches</summary>
+<summary>📦 Shopee PH&nbsp;&nbsp;•&nbsp;&nbsp;12 patches</summary>
 <br>
 
 **Package name:** `com.shopee.ph`
@@ -41,10 +41,18 @@ Once published to GitHub, click the button below or manually add this repository
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
-| [Disable ad and telemetry SDK components](#disable-ad-and-telemetry-sdk-components) | Disables third-party ad, attribution, and telemetry services, receivers, providers, and activities in AndroidManifest.xml to reduce startup overhead and background wakeups. |  |
+| [Boost Shopee Live latency and quality](#boost-shopee-live-latency-and-quality) | Applies low-latency live player optimizations (IPv4-only DNS, decoder pre-creation, hardware low-delay decoding, zero P2P uploads), adds a stream resolution preset picker (Lowest/Fast/Balanced/Highest/Auto), and stops live telemetry heartbeats and hidden screenshot uploads. | • Live stream resolution preset<br>• Lock selected resolution<br>• Enable low-latency network & decoder boost<br>• Disable Live P2P peer uploading<br>• Disable Live telemetry & snapshot uploads |
+| [Disable Live and Video auto-preloading](#disable-live-and-video-auto-preloading) | Disables background Shopee Video download, floating Live video, and Check-In widget components and skips eager Live/Video startup preloading and auto-landing prefetchers. |  |
+| [Disable ShopeeTracker event collection](#disable-shopeetracker-event-collection) | Short-circuits ShopeeTracker event logging, MMAP buffer usage, scheduled uploads, and background flush calls while keeping ShopeeTrackerContentProvider intact for SESSION_ID reads. |  |
+| [Disable ad and telemetry SDK components](#disable-ad-and-telemetry-sdk-components) | Disables third-party and first-party telemetry/APM components, Firebase Analytics/Crashlytics/DataTransport registrars, and telemetry manifest flags in AndroidManifest.xml. |  |
 | [Disable background boot and prefetch receivers](#disable-background-boot-and-prefetch-receivers) | Disables manifest receivers triggered on device boot or package replacement so Shopee stays dormant until launched. |  |
+| [Disable cold-start APM and profiler valves](#disable-cold-start-apm-and-profiler-valves) | Skips non-critical cold-start APM, Firebase Analytics, logging pipeline valves, and Luban/StackLens background sampling to cut startup latency, CPU usage, and battery drain. |  |
+| [Hide Shopee Video and Live](#hide-shopee-video-and-live) | Removes the Shopee Live & Video homepage section before view inflation, disables homepage video autoplay/refresh jobs, and optionally hides the Live & Video bottom navigation tab. | • Hide homepage Shopee Live & Video cards<br>• Hide Live & Video bottom navigation tab |
+| [Optimize item and network loading](#optimize-item-and-network-loading) | Accelerates product, PDP, and feed loading by enabling Cronet Zstd/QUIC prewarming and multi-IP failover, native PDP prefetching, multi-threaded feed decode, instant image rendering, and removing per-request network and image telemetry overhead. | • Enable Cronet Zstd, prewarm, and telemetry removal<br>• Enable native PDP & feed performance toggles<br>• Instant product image rendering |
 | [Patch smoke test](#patch-smoke-test) | Adds a harmless manifest metadata marker so you can test whether a re-signed Shopee APK boots and logs in without triggering F13 integrity errors. |  |
+| [Stop background telemetry and sync workers](#stop-background-telemetry-and-sync-workers) | Short-circuits background WorkManager telemetry uploaders so Shopee stays dormant in the background without triggering WorkManager retry loops. | • Disable background AptLog re-upload worker<br>• Disable background DataPoint sync worker (Experimental)<br>• Disable background React Native OTA bundle sync |
 | [Strip unused CPU architectures](#strip-unused-cpu-architectures) | Removes native libraries for unused CPU architectures from universal APKs to reduce app size and startup scan overhead. | • CPU architecture to keep |
+| [Trim invasive and battery-draining permissions](#trim-invasive-and-battery-draining-permissions) | Removes non-essential privacy, advertising, and background wake permissions (background location, AD_ID, call log, contacts, calendar, exact alarms, boot completed, OEM badges) while keeping camera, foreground location, notifications, and biometric auth intact. |  |
 
 </details>
 
