@@ -17,6 +17,8 @@ internal val COMPONENT_TAGS = setOf(
 internal val AD_AND_TELEMETRY_COMPONENT_PREFIXES = listOf(
     "com.google.android.gms.ads.",
     "com.google.android.gms.measurement.",
+    "com.google.android.gms.tagmanager.",
+    "com.google.android.datatransport.runtime.",
     "com.google.firebase.analytics.",
     "com.google.firebase.crashlytics.",
     "com.google.firebase.perf.",
@@ -31,11 +33,71 @@ internal val AD_AND_TELEMETRY_COMPONENT_PREFIXES = listOf(
     "com.unity3d.ads.",
     "com.vungle.",
     "io.branch.",
+    "com.shopee.luban.module.focuswindow.",
+    "com.shopee.app.infra.tracker.util.ShopeeInstallReceiver",
+    "com.shopee.app.application.tracking.TrackerDebugControlReceiver",
+    "com.shopee.app.apm.autotest.",
+    "com.huawei.hms.mlsdk.",
+    "com.huawei.agconnect.",
 )
 
 internal val PROTECTED_COMPONENT_PREFIXES = listOf(
     "com.google.firebase.messaging.",
     "androidx.work.",
+    "com.shopee.shopeetracker.",
+    "com.shopee.shpssdk",
+    "com.shopee.shopeepaysdk.",
+)
+
+internal val TELEMETRY_METADATA_OVERRIDES: Map<String, String> = linkedMapOf(
+    "google_analytics_deferred_deep_link_enabled" to "false",
+    "firebase_analytics_collection_deactivated" to "true",
+    "firebase_analytics_collection_enabled" to "false",
+    "firebase_crashlytics_collection_enabled" to "false",
+    "firebase_performance_collection_enabled" to "false",
+    "google_analytics_adid_collection_enabled" to "false",
+    "google_analytics_ssaid_collection_enabled" to "false",
+    "com.facebook.sdk.AutoLogAppEventsEnabled" to "false",
+    "com.facebook.sdk.AdvertiserIDCollectionEnabled" to "false",
+)
+
+internal val REMOVABLE_FIREBASE_REGISTRARS = setOf(
+    "com.google.firebase.components:com.google.firebase.analytics.connector.internal.AnalyticsConnectorRegistrar",
+    "com.google.firebase.components:com.google.firebase.crashlytics.CrashlyticsRegistrar",
+    "com.google.firebase.components:com.google.firebase.datatransport.TransportRegistrar",
+)
+
+internal val VIDEO_AND_LIVE_BACKGROUND_COMPONENTS = setOf(
+    "com.shopee.sz.luckyvideo.common.utils.download.VideoDownloadService",
+    "com.shopee.live.livestreaming.audience.floatwindow.base.service.FloatVideoService",
+    "com.shopee.live.livestreaming.util.NetworkStateReceiver",
+    "com.shopee.addon.widgetcheckin.CheckInAppWidget",
+    "com.shopee.addon.widgetcheckin.receiver.UpdateWidgetReceiver",
+)
+
+internal val INVASIVE_PERMISSIONS = setOf(
+    "android.permission.ACCESS_BACKGROUND_LOCATION",
+    "com.google.android.gms.permission.AD_ID",
+    "android.permission.ACCESS_ADSERVICES_ATTRIBUTION",
+    "com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE",
+    "android.permission.READ_CALL_LOG",
+    "android.permission.READ_CONTACTS",
+    "android.permission.READ_CALENDAR",
+    "android.permission.WRITE_CALENDAR",
+    "android.permission.SCHEDULE_EXACT_ALARM",
+    "android.permission.RECEIVE_BOOT_COMPLETED",
+    "com.huawei.appmarket.service.commondata.permission.GET_COMMON_DATA",
+    "com.sec.android.provider.badge.permission.READ",
+    "com.sec.android.provider.badge.permission.WRITE",
+    "com.htc.launcher.permission.READ_SETTINGS",
+    "com.htc.launcher.permission.UPDATE_SHORTCUT",
+    "com.sonyericsson.home.permission.BROADCAST_BADGE",
+    "com.sonymobile.home.permission.PROVIDER_INSERT_BADGE",
+    "com.anddoes.launcher.permission.UPDATE_COUNT",
+    "com.majeur.launcher.permission.UPDATE_BADGE",
+    "com.huawei.android.launcher.permission.CHANGE_BADGE",
+    "com.huawei.android.launcher.permission.READ_SETTINGS",
+    "com.huawei.android.launcher.permission.WRITE_SETTINGS",
 )
 
 internal val WAKE_RECEIVER_ACTIONS = setOf(
@@ -64,23 +126,94 @@ fun isAdOrTelemetryComponent(componentName: String?): Boolean {
     return AD_AND_TELEMETRY_COMPONENT_PREFIXES.any { componentName.startsWith(it) }
 }
 
-/**
- * Sets `android:enabled="false"` on direct `<application>` child components matching third-party ad
- * or telemetry SDK namespaces. Returns the number of modified components.
- */
-fun disableAdAndTelemetryComponents(manifest: ResourceXml): Int {
+private fun disableMatchingComponents(
+    manifest: ResourceXml,
+    predicate: (String?) -> Boolean,
+): Int {
     val application = requireApplication(manifest)
     var disabledCount = 0
 
     for (component in application.children) {
         if (component.tag !in COMPONENT_TAGS) continue
-        if (!isAdOrTelemetryComponent(component.attribute("android:name"))) continue
+        if (!predicate(component.attribute("android:name"))) continue
 
         component.setAttribute("android:enabled", "false")
         disabledCount++
     }
 
     return disabledCount
+}
+
+private fun upsertMetaData(parent: XmlElement, name: String, value: String) {
+    val existing = parent.children("meta-data")
+        .firstOrNull { it.attribute("android:name") == name }
+
+    if (existing != null) {
+        existing.setAttribute("android:value", value)
+        return
+    }
+
+    parent.appendChild("meta-data") {
+        setAttribute("android:name", name)
+        setAttribute("android:value", value)
+    }
+}
+
+/**
+ * Sets `android:enabled="false"` on direct `<application>` child components matching third-party ad
+ * or telemetry SDK namespaces. Returns the number of modified components.
+ */
+fun disableAdAndTelemetryComponents(manifest: ResourceXml): Int =
+    disableMatchingComponents(manifest, ::isAdOrTelemetryComponent)
+
+/**
+ * Disables Firebase/Google/Meta telemetry flags via `<meta-data>` overrides and removes non-essential
+ * Firebase analytics, crashlytics, and datatransport registrars from `ComponentDiscoveryService`.
+ * Returns the number of upserted or removed `<meta-data>` entries.
+ */
+fun deactivateTelemetryMetadataAndRegistrars(manifest: ResourceXml): Int {
+    val application = requireApplication(manifest)
+    var updatedCount = 0
+
+    for ((key, value) in TELEMETRY_METADATA_OVERRIDES) {
+        upsertMetaData(application, key, value)
+        updatedCount++
+    }
+
+    val discoveryService = application.children("service")
+        .firstOrNull { it.attribute("android:name") == "com.google.firebase.components.ComponentDiscoveryService" }
+    if (discoveryService != null) {
+        for (meta in discoveryService.children("meta-data").toList()) {
+            if (meta.attribute("android:name") !in REMOVABLE_FIREBASE_REGISTRARS) continue
+            meta.remove()
+            updatedCount++
+        }
+    }
+
+    return updatedCount
+}
+
+/**
+ * Sets `android:enabled="false"` on background Shopee Video, Live floating-window, and Check-In
+ * widget components in `AndroidManifest.xml`. Returns the number of disabled components.
+ */
+fun disableVideoAndLiveBackgroundComponents(manifest: ResourceXml): Int =
+    disableMatchingComponents(manifest) { it in VIDEO_AND_LIVE_BACKGROUND_COMPONENTS }
+
+/**
+ * Removes non-essential privacy, advertising, and background wake `<uses-permission>` entries from
+ * `<manifest>`. Returns the number of removed permission entries.
+ */
+fun trimInvasivePermissions(manifest: ResourceXml): Int {
+    var removedCount = 0
+
+    for (permission in manifest.root.children("uses-permission").toList()) {
+        if (permission.attribute("android:name") !in INVASIVE_PERMISSIONS) continue
+        permission.remove()
+        removedCount++
+    }
+
+    return removedCount
 }
 
 /**
@@ -115,19 +248,7 @@ fun disableStartupWakeReceivers(manifest: ResourceXml): Int {
  * Inserts or updates the harmless `<meta-data>` smoke-test marker inside `<application>`.
  */
 fun injectSmokeTestMetadata(manifest: ResourceXml, value: String = "true") {
-    val application = requireApplication(manifest)
-    val existing = application.children("meta-data")
-        .firstOrNull { it.attribute("android:name") == SMOKE_TEST_METADATA_NAME }
-
-    if (existing != null) {
-        existing.setAttribute("android:value", value)
-        return
-    }
-
-    application.appendChild("meta-data") {
-        setAttribute("android:name", SMOKE_TEST_METADATA_NAME)
-        setAttribute("android:value", value)
-    }
+    upsertMetaData(requireApplication(manifest), SMOKE_TEST_METADATA_NAME, value)
 }
 
 /**

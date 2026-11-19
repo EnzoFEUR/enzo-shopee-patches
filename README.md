@@ -4,10 +4,10 @@ Performance and ad/telemetry reduction [Morphe](https://morphe.software) patches
 
 ## ❓ About
 
-Phase 1 provides defensive, APK-level manifest and architecture optimization patches designed to lower startup overhead, strip third-party ad/attribution SDK components, suppress background boot wakeups, and validate device compatibility early via a harmless smoke test before adding deeper bytecode hooks.
+Shopee Lite-style optimization patches for `com.shopee.ph` (`3.85.28`), combining manifest telemetry/registrar cleanup, invasive permission trimming, and verified bytecode short-circuits for `ShopeeTracker`, cold-start `LuBanSDK`/APM valves, and Live/Video auto-preloading.
 
 > [!NOTE]
-> **Integrity / `F13` smoke-test-first workflow:** Shopee enforces APK signature and app-integrity checks (which commonly flag re-signed builds with login/checkout error `F13`). Enable **Patch smoke test** on a clean base APK first to verify whether a re-signed build boots and logs in on your device before investing in additional patches. This repository intentionally does **not** include signature, anti-tamper, Play Integrity, or ShopeePay/checkout security bypasses.
+> **Sign-in & `F13` notes:** Shopee enforces APK signature and integrity checks (`F13`). Re-signed APKs cannot use native Google Sign-In, Facebook SSO, Passkeys, or Google SMS Retriever auto-fill because those bind to Shopee's official signing certificate — use **Phone/Email + Password + WhatsApp OTP** to sign in cleanly. This repository intentionally does **not** include signature, anti-tamper, Play Integrity, or ShopeePay/checkout security bypasses.
 
 ### How to use these patches
 
@@ -82,13 +82,10 @@ The built patch bundle `.mpp` is output to `patches/build/libs/patches-*.mpp` an
    ```
 4. Use semantic commits on `dev` (`feat:`, `fix:`, `perf:`, `chore:`); `.github/workflows/release.yml` handles building `.mpp` pre-releases on `dev` and stable releases when `dev` is merged into `main`.
 
-## 🗺️ Phase 2 Roadmap
+## 🗺️ Roadmap
 
-After confirming the Phase 1 smoke test on your target device:
-
-1. Drop your pinned `com.shopee.ph` `.apkm` into `apks/`.
-2. Inspect the DEX classes and React Native bridge locally with `jadx`.
-3. Add verified bytecode fingerprints for native splash ads, promo dialogs, and video/live preloading hooks inside `patches/src/main/kotlin/app/enzofeur/shopee/patches/shopee/` and `extensions/extension/`.
+- **Implemented (Phase 1 + Phase 2 Core):** Deep manifest telemetry/registrar deactivation, `ShopeeTracker` kill-switch, cold-start APM/`LuBanSDK`/logging valves, Live & Video auto-preload killer, background boot receiver suppressor, multi-ABI stripping, and opt-in permission trimmer (verified against `com.shopee.ph` `3.85.28`).
+- **Optional UI polish (next):** Hiding Video/Live bottom tabs and suppressing non-essential data-collection popups after testing Phase 2 Core on device.
 
 ## 📜 License
 

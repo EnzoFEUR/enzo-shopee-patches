@@ -4,6 +4,7 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.readXml
 import app.morphe.patcher.xml.ResourceXml
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Test
@@ -197,5 +198,199 @@ class ManifestOptimizationTest {
             emptyList<String>(),
             selectUnusedAbiEntries(singleAbiEntries, "arm64-v8a"),
         )
+    }
+
+    @Test
+    fun disablesShopeeTelemetryAndHmsComponentsWhileProtectingTrackerSecurityAndPayments() {
+        val manifest = """
+            <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.shopee.ph">
+                <application>
+                    <service android:name="com.google.android.gms.tagmanager.TagManagerService" />
+                    <service android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService" />
+                    <service android:name="com.shopee.luban.module.focuswindow.server.CoreService" />
+                    <receiver android:name="com.shopee.app.infra.tracker.util.ShopeeInstallReceiver" />
+                    <provider android:name="com.huawei.hms.mlsdk.common.provider.MLInitializerProvider" />
+                    <provider android:name="com.shopee.shopeetracker.data.ShopeeTrackerContentProvider" />
+                    <service android:name="com.shopee.shpssdk.wvvvuvww" />
+                    <service android:name="com.shopee.shopeepaysdk.PayService" />
+                    <service android:name="com.google.firebase.messaging.FirebaseMessagingService" />
+                    <service android:name="androidx.work.impl.background.systemjob.SystemJobService" />
+                </application>
+            </manifest>
+        """
+
+        parseXml(manifest).use { xml ->
+            val count = disableAdAndTelemetryComponents(xml)
+            assertEquals(5, count)
+
+            val app = xml.root.children("application").single()
+            listOf(
+                "com.google.android.gms.tagmanager.TagManagerService",
+                "com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService",
+                "com.shopee.luban.module.focuswindow.server.CoreService",
+                "com.shopee.app.infra.tracker.util.ShopeeInstallReceiver",
+                "com.huawei.hms.mlsdk.common.provider.MLInitializerProvider",
+            ).forEach { name ->
+                assertEquals(
+                    "false",
+                    app.elementByAttribute("android:name", name).attribute("android:enabled"),
+                )
+            }
+
+            listOf(
+                "com.shopee.shopeetracker.data.ShopeeTrackerContentProvider",
+                "com.shopee.shpssdk.wvvvuvww",
+                "com.shopee.shopeepaysdk.PayService",
+                "com.google.firebase.messaging.FirebaseMessagingService",
+                "androidx.work.impl.background.systemjob.SystemJobService",
+            ).forEach { name ->
+                assertNull(
+                    app.elementByAttribute("android:name", name).attribute("android:enabled"),
+                )
+            }
+        }
+    }
+
+    @Test
+    fun deactivatesTelemetryMetadataIdempotentlyAndRemovesNonPushRegistrars() {
+        val manifest = """
+            <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.shopee.ph">
+                <application>
+                    <meta-data android:name="google_analytics_deferred_deep_link_enabled" android:value="true" />
+                    <meta-data android:name="com.facebook.sdk.AutoLogAppEventsEnabled" android:value="false" />
+                    <service android:name="com.google.firebase.components.ComponentDiscoveryService">
+                        <meta-data
+                            android:name="com.google.firebase.components:com.google.firebase.analytics.connector.internal.AnalyticsConnectorRegistrar"
+                            android:value="com.google.firebase.components.ComponentRegistrar" />
+                        <meta-data
+                            android:name="com.google.firebase.components:com.google.firebase.crashlytics.CrashlyticsRegistrar"
+                            android:value="com.google.firebase.components.ComponentRegistrar" />
+                        <meta-data
+                            android:name="com.google.firebase.components:com.google.firebase.datatransport.TransportRegistrar"
+                            android:value="com.google.firebase.components.ComponentRegistrar" />
+                        <meta-data
+                            android:name="com.google.firebase.components:com.google.firebase.messaging.FirebaseMessagingRegistrar"
+                            android:value="com.google.firebase.components.ComponentRegistrar" />
+                        <meta-data
+                            android:name="com.google.firebase.components:com.google.mlkit.vision.barcode.internal.BarcodeRegistrar"
+                            android:value="com.google.firebase.components.ComponentRegistrar" />
+                    </service>
+                </application>
+            </manifest>
+        """
+
+        parseXml(manifest).use { xml ->
+            val firstCount = deactivateTelemetryMetadataAndRegistrars(xml)
+            assertEquals(TELEMETRY_METADATA_OVERRIDES.size + 3, firstCount)
+
+            val secondCount = deactivateTelemetryMetadataAndRegistrars(xml)
+            assertEquals(TELEMETRY_METADATA_OVERRIDES.size, secondCount)
+
+            val app = xml.root.children("application").single()
+            for ((key, expectedValue) in TELEMETRY_METADATA_OVERRIDES) {
+                val matching = app.children("meta-data").filter { it.attribute("android:name") == key }
+                assertEquals("Expected single meta-data for $key", 1, matching.size)
+                assertEquals(expectedValue, matching.single().attribute("android:value"))
+            }
+
+            val discoveryService = app.elementByAttribute(
+                "android:name",
+                "com.google.firebase.components.ComponentDiscoveryService",
+            )
+            val remainingRegistrars = discoveryService.children("meta-data")
+                .mapNotNull { it.attribute("android:name") }
+            assertEquals(
+                listOf(
+                    "com.google.firebase.components:com.google.firebase.messaging.FirebaseMessagingRegistrar",
+                    "com.google.firebase.components:com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+                ),
+                remainingRegistrars,
+            )
+        }
+    }
+
+    @Test
+    fun disablesVideoLiveAndWidgetBackgroundComponentsWhileKeepingShoppingCore() {
+        val manifest = """
+            <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.shopee.ph">
+                <application>
+                    <service android:name="com.shopee.sz.luckyvideo.common.utils.download.VideoDownloadService" />
+                    <service android:name="com.shopee.live.livestreaming.audience.floatwindow.base.service.FloatVideoService" />
+                    <receiver android:name="com.shopee.live.livestreaming.util.NetworkStateReceiver" />
+                    <receiver android:name="com.shopee.addon.widgetcheckin.CheckInAppWidget" />
+                    <receiver android:name="com.shopee.addon.widgetcheckin.receiver.UpdateWidgetReceiver" />
+                    <service android:name="com.shopee.app.biz.noti.impl.pushnotification.fcm.ShopeeFcmMainService" />
+                    <receiver android:name="com.shopee.chat.sdk.data.job.FailedBizChatMessageBroadcastReceiver" />
+                </application>
+            </manifest>
+        """
+
+        parseXml(manifest).use { xml ->
+            val count = disableVideoAndLiveBackgroundComponents(xml)
+            assertEquals(5, count)
+
+            val app = xml.root.children("application").single()
+            VIDEO_AND_LIVE_BACKGROUND_COMPONENTS.forEach { name ->
+                assertEquals(
+                    "false",
+                    app.elementByAttribute("android:name", name).attribute("android:enabled"),
+                )
+            }
+            assertNull(
+                app.elementByAttribute("android:name", "com.shopee.app.biz.noti.impl.pushnotification.fcm.ShopeeFcmMainService")
+                    .attribute("android:enabled"),
+            )
+            assertNull(
+                app.elementByAttribute("android:name", "com.shopee.chat.sdk.data.job.FailedBizChatMessageBroadcastReceiver")
+                    .attribute("android:enabled"),
+            )
+        }
+    }
+
+    @Test
+    fun trimsInvasivePermissionsWhilePreservingCoreAuthSecurityAndForegroundFeatures() {
+        val manifest = """
+            <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.shopee.ph">
+                <uses-permission android:name="android.permission.INTERNET" />
+                <uses-permission android:name="android.permission.CAMERA" />
+                <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+                <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+                <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+                <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+                <uses-permission android:name="android.permission.DETECT_SCREEN_CAPTURE" />
+                <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+                <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+                <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+                <uses-permission android:name="android.permission.ACCESS_ADSERVICES_ATTRIBUTION" />
+                <uses-permission android:name="android.permission.READ_CALL_LOG" />
+                <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+                <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+                <uses-permission android:name="com.sec.android.provider.badge.permission.READ" />
+                <uses-permission android:name="com.huawei.android.launcher.permission.WRITE_SETTINGS" />
+                <application />
+            </manifest>
+        """
+
+        parseXml(manifest).use { xml ->
+            val removed = trimInvasivePermissions(xml)
+            assertEquals(8, removed)
+
+            val remaining = xml.root.children("uses-permission")
+                .mapNotNull { it.attribute("android:name") }
+            assertEquals(
+                listOf(
+                    "android.permission.INTERNET",
+                    "android.permission.CAMERA",
+                    "android.permission.ACCESS_FINE_LOCATION",
+                    "android.permission.POST_NOTIFICATIONS",
+                    "android.permission.USE_BIOMETRIC",
+                    "android.permission.QUERY_ALL_PACKAGES",
+                    "android.permission.DETECT_SCREEN_CAPTURE",
+                    "com.google.android.c2dm.permission.RECEIVE",
+                ),
+                remaining,
+            )
+            assertNotNull(xml.root.children("application").singleOrNull())
+        }
     }
 }
