@@ -26,17 +26,26 @@ Once published to GitHub, click the button below or manually add this repository
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
+> **[v1.0.0-dev.1](https://github.com/EnzoFEUR/enzo-shopee-patches/releases/tag/v1.0.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;4 patches total
+<details open>
+<summary>📦 Shopee PH&nbsp;&nbsp;•&nbsp;&nbsp;4 patches</summary>
+<br>
 
-<!-- Do not modify this section by hand. The patch list is generated when release.yml creates a new release.
-     
-     If you wish for the patches list to be collapsed, then remove the word 'EXPANDED' from the comment tag above.
+**Package name:** `com.shopee.ph`
 
-     If you wish to manually keep this list updated then remove the PATCHES_START and PATCHES_END 
-     comment blocks entirely. -->
+**🎯 Supported versions:**
 
-#### A list of your patches will automatically be shown here after your first patches release is created.
+| 3.85.28 |
+| :---: |
 
-&nbsp;
+| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+|----------|----------------|-----------|
+| [Disable ad and telemetry SDK components](#disable-ad-and-telemetry-sdk-components) | Disables third-party ad, attribution, and telemetry services, receivers, providers, and activities in AndroidManifest.xml to reduce startup overhead and background wakeups. |  |
+| [Disable background boot and prefetch receivers](#disable-background-boot-and-prefetch-receivers) | Disables manifest receivers triggered on device boot or package replacement so Shopee stays dormant until launched. |  |
+| [Patch smoke test](#patch-smoke-test) | Adds a harmless manifest metadata marker so you can test whether a re-signed Shopee APK boots and logs in without triggering F13 integrity errors. |  |
+| [Strip unused CPU architectures](#strip-unused-cpu-architectures) | Removes native libraries for unused CPU architectures from universal APKs to reduce app size and startup scan overhead. | • CPU architecture to keep |
+
+</details>
 
 <!-- PATCHES_END -->
 

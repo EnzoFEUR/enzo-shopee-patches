@@ -1,5 +1,155 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "0.0.0",
-  "patches": []
+  "version": "1.0.0-dev.1",
+  "patches": [
+    {
+      "name": "Disable ad and telemetry SDK components",
+      "description": "Disables third-party ad, attribution, and telemetry services, receivers, providers, and activities in AndroidManifest.xml to reduce startup overhead and background wakeups.",
+      "default": true,
+      "category": null,
+      "compatiblePackages": [
+        {
+          "packageName": "com.shopee.ph",
+          "name": "Shopee PH",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#EE4D2D",
+          "signatures": null,
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "3.85.28",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
+              "version": null,
+              "versionCodes": null,
+              "isExperimental": true,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable background boot and prefetch receivers",
+      "description": "Disables manifest receivers triggered on device boot or package replacement so Shopee stays dormant until launched.",
+      "default": false,
+      "category": null,
+      "compatiblePackages": [
+        {
+          "packageName": "com.shopee.ph",
+          "name": "Shopee PH",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#EE4D2D",
+          "signatures": null,
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "3.85.28",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
+              "version": null,
+              "versionCodes": null,
+              "isExperimental": true,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Patch smoke test",
+      "description": "Adds a harmless manifest metadata marker so you can test whether a re-signed Shopee APK boots and logs in without triggering F13 integrity errors.",
+      "default": false,
+      "category": null,
+      "compatiblePackages": [
+        {
+          "packageName": "com.shopee.ph",
+          "name": "Shopee PH",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#EE4D2D",
+          "signatures": null,
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "3.85.28",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
+              "version": null,
+              "versionCodes": null,
+              "isExperimental": true,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Strip unused CPU architectures",
+      "description": "Removes native libraries for unused CPU architectures from universal APKs to reduce app size and startup scan overhead.",
+      "default": false,
+      "category": null,
+      "compatiblePackages": [
+        {
+          "packageName": "com.shopee.ph",
+          "name": "Shopee PH",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#EE4D2D",
+          "signatures": null,
+          "formFactor": "MOBILE",
+          "targets": [
+            {
+              "version": "3.85.28",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
+              "version": null,
+              "versionCodes": null,
+              "isExperimental": true,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "keepAbi",
+          "title": "CPU architecture to keep",
+          "description": "Native library ABI directory to keep. No libraries are deleted if this ABI is absent.",
+          "required": false,
+          "type": "kotlin.String",
+          "default": "arm64-v8a",
+          "values": {
+            "ARM64 (Modern phones)": "arm64-v8a",
+            "ARMv7 (32-bit)": "armeabi-v7a"
+          }
+        }
+      ]
+    }
+  ]
 }
